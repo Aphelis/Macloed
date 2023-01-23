@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'c:\Users\letan\OneDrive\Máy tính\Macleod2\uic\plot.ui'
+# Form implementation generated from reading ui file 'c:\Users\letan\OneDrive\Máy tính\Macloed\uic\plot.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.0
 #
@@ -30,27 +30,9 @@ class Ui_Form(object):
         self.T2.setGeometry(QtCore.QRect(0, 0, 690, 460))
         self.T2.setObjectName("T2")
         self.tabWidget.addTab(self.tab_T2, "")
-        self.tab_T3 = QtWidgets.QWidget()
-        self.tab_T3.setObjectName("tab_T3")
-        self.T3 = QtWidgets.QWidget(self.tab_T3)
-        self.T3.setGeometry(QtCore.QRect(0, 0, 690, 460))
-        self.T3.setObjectName("T3")
-        self.tabWidget.addTab(self.tab_T3, "")
-        self.tab_TB = QtWidgets.QWidget()
-        self.tab_TB.setObjectName("tab_TB")
-        self.TB = QtWidgets.QWidget(self.tab_TB)
-        self.TB.setGeometry(QtCore.QRect(0, 0, 690, 460))
-        self.TB.setObjectName("TB")
-        self.tabWidget.addTab(self.tab_TB, "")
-        self.tab_TA = QtWidgets.QWidget()
-        self.tab_TA.setObjectName("tab_TA")
-        self.TA = QtWidgets.QWidget(self.tab_TA)
-        self.TA.setGeometry(QtCore.QRect(0, 0, 690, 460))
-        self.TA.setObjectName("TA")
-        self.tabWidget.addTab(self.tab_TA, "")
 
         self.retranslateUi(Form)
-        self.tabWidget.setCurrentIndex(4)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
@@ -58,6 +40,3 @@ class Ui_Form(object):
         Form.setWindowTitle(_translate("Form", "Form"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_T1), _translate("Form", "變色前光譜圖"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_T2), _translate("Form", "變色后光譜圖"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_T3), _translate("Form", "Target 光譜圖"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_TB), _translate("Form", "優化後變色前光譜圖"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_TA), _translate("Form", "優化後變色後光譜圖"))

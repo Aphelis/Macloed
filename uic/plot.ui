@@ -29,7 +29,7 @@
     <enum>QTabWidget::Triangular</enum>
    </property>
    <property name="currentIndex">
-    <number>4</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="tab_T1">
     <attribute name="title">
@@ -51,51 +51,6 @@
      <string>變色后光譜圖</string>
     </attribute>
     <widget class="QWidget" name="T2" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>690</width>
-       <height>460</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_T3">
-    <attribute name="title">
-     <string>Target 光譜圖</string>
-    </attribute>
-    <widget class="QWidget" name="T3" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>690</width>
-       <height>460</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_TB">
-    <attribute name="title">
-     <string>優化後變色前光譜圖</string>
-    </attribute>
-    <widget class="QWidget" name="TB" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>690</width>
-       <height>460</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_TA">
-    <attribute name="title">
-     <string>優化後變色後光譜圖</string>
-    </attribute>
-    <widget class="QWidget" name="TA" native="true">
      <property name="geometry">
       <rect>
        <x>0</x>

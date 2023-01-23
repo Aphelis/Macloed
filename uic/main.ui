@@ -99,7 +99,6 @@
     </widget>
     <addaction name="menuNew"/>
     <addaction name="menuOpen"/>
-    <addaction name="actionTest"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -168,15 +167,17 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionOpen"/>
    <addaction name="actionNewDesign"/>
+   <addaction name="separator"/>
    <addaction name="actionPlot"/>
-   <addaction name="actionTest"/>
+   <addaction name="actionCaculator"/>
+   <addaction name="separator"/>
+   <addaction name="actionTargets"/>
   </widget>
   <action name="actionNewDesign">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/icons/address-book-open.png</normaloff>../icon/icons/address-book-open.png</iconset>
+     <normaloff>../icon/newspaper--plus.png</normaloff>../icon/newspaper--plus.png</iconset>
    </property>
    <property name="text">
     <string>Design</string>
@@ -192,6 +193,10 @@
    </property>
   </action>
   <action name="actionNewMaterial">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/new_folder.png</normaloff>../icon/new_folder.png</iconset>
+   </property>
    <property name="text">
     <string>Material</string>
    </property>
@@ -206,26 +211,29 @@
     <string>Remove Layer</string>
    </property>
   </action>
-  <action name="actionTest">
-   <property name="text">
-    <string>Test</string>
-   </property>
-  </action>
   <action name="actionPlot">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/icons/chart--pencil.png</normaloff>../icon/icons/chart--pencil.png</iconset>
+     <normaloff>../icon/chart.png</normaloff>../icon/chart.png</iconset>
    </property>
    <property name="text">
     <string>Plot</string>
    </property>
   </action>
   <action name="actionTargets">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/geolocation.png</normaloff>../icon/geolocation.png</iconset>
+   </property>
    <property name="text">
     <string>Targets</string>
    </property>
   </action>
   <action name="actionOpenTargets">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/open_folder.png</normaloff>../icon/open_folder.png</iconset>
+   </property>
    <property name="text">
     <string>Targets</string>
    </property>
@@ -241,6 +249,10 @@
    </property>
   </action>
   <action name="actionCaculator">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/calculator.png</normaloff>../icon/calculator.png</iconset>
+   </property>
    <property name="text">
     <string>Caculator</string>
    </property>

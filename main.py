@@ -7,7 +7,8 @@ from PyQt6.QtWidgets import (
     QMainWindow, QApplication, QMdiArea,
     QMdiSubWindow, QFileDialog, QTableWidget,
     QDialogButtonBox, QComboBox, QTableWidgetItem,
-    QTabWidget, QPushButton, QWidget, QMessageBox
+    QTabWidget, QPushButton, QWidget, QMessageBox,
+    QGridLayout
 )
 from PyQt6.QtGui import QAction, QCloseEvent
 from PyQt6.QtCore import Qt, QThreadPool
@@ -83,10 +84,10 @@ class FormulaWindow(QMdiSubWindow):
         self.hide()
         super().closeEvent(event) 
 class PlotWindow(QMdiSubWindow):
-    def __init__(self, main, T1, T2):
+    def __init__(self, parent, T1, T2):
         super(PlotWindow, self).__init__()
         uic.loadUi("uic/plot.ui", self)
-        self.main = main
+        self.parent = parent
 
         self.setWindowTitle("Plot Window")
 
@@ -94,9 +95,6 @@ class PlotWindow(QMdiSubWindow):
         self.plot_matp(self.T1, T1)
         self.T2 = self.findChild(QWidget, "T2")
         self.plot_matp(self.T2, T2)
-        self.T3 = self.findChild(QWidget, "T3")
-        self.TB= self.findChild(QWidget, "TB")
-        self.TA = self.findChild(QWidget, "TA")
         #
         self.tabWidget = self.findChild(QTabWidget, "tabWidget")
         
@@ -113,10 +111,16 @@ class PlotWindow(QMdiSubWindow):
         layout.addWidget(toolbar)
         layout.addWidget(sc)
         plot.setLayout(layout)
+    def addTab(self, tabName):
+        page = QWidget(self.tabWidget)
+        self.tabWidget.addTab(page, tabName)
     def plot_over(self, T3, TB, TA):
-        self.plot_matp(self.T3, T3)
-        self.plot_matp(self.TB, TB)
-        self.plot_matp(self.TA, TA)
+        self.addTab("Target 光譜圖")
+        self.plot_matp(self.tabWidget.widget(2), T3)
+        self.addTab("進行優化的變色前")
+        self.plot_matp(self.tabWidget.widget(3), TB)
+        self.addTab("進行優化的變色後")
+        self.plot_matp(self.tabWidget.widget(4), TA)
     def closeEvent(self, event: QCloseEvent):
         super().closeEvent(event) 
         
@@ -368,6 +372,7 @@ class NewDesignWindow(QMdiSubWindow):
         self.parent.menuRemoveRow.setEnabled(False)
         self.parent.formulaB = None
         self.parent.formulaA = None
+        self.parent.menuNewDesign.setEnabled(True)
         super().closeEvent(event)
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -398,8 +403,6 @@ class MainWindow(QMainWindow):
         self.menuOpenTargets = self.findChild(QAction, "actionOpenTargets")
         self.menuOpenTargets.triggered.connect(self.open_targets)
         self.menuOpenTargets.setEnabled(False)
-        self.menuTest = self.findChild(QAction, "actionTest")
-        self.menuTest.triggered.connect(self.test)
         # Menu Edit
         self.menuInsertRow = self.findChild(QAction, "actionInsert_Row")
         self.menuInsertRow.setEnabled(False)
@@ -420,13 +423,7 @@ class MainWindow(QMainWindow):
         self.menuPlot.setEnabled(False)
         self.menuCalculate = self.findChild(QAction, "actionCaculator")
         self.menuCalculate.triggered.connect(self.plot_Optimize)
-
-    def test(self):
-        self.plot_window = PlotWindow(self, [[0,1,2,3],[1,2,3,4],[10,20,30,40]], [[0,1,2,3],[1,2,3,4],[10,20,30,40]], 
-                                            [[0,1,2,3],[1,2,3,4],[10,20,30,40]], [[0,1,2,3],[1,2,3,4],[10,20,30,40]], 
-                                            [[0,1,2,3],[1,2,3,4],[10,20,30,40]])
-        self.mdi.addSubWindow(self.plot_window)
-        self.plot_window.show()
+        self.menuCalculate.setEnabled(False)
     def program_initialization(self):
         MainWindow.list_material = []
         MainWindow.data_material = {}
@@ -443,6 +440,7 @@ class MainWindow(QMainWindow):
         MainWindow.custom_wavelengths = [str(w) for w in wavelengths]
     def new_design_window(self):
         try:
+            self.menuNewDesign.setEnabled(False)
             self.program_initialization()
             self.table_window = NewDesignWindow(self)
             self.mdi.addSubWindow(self.table_window)
@@ -516,8 +514,6 @@ class MainWindow(QMainWindow):
                 self.targets_window.refreshTable(reflectance = reflectance, index = tab_index)
         # except :
         #     pass
-        
-            
     def selec_material_folder(self):
         MainWindow.list_material = []
         path = QFileDialog.getExistingDirectory(self)
@@ -531,10 +527,14 @@ class MainWindow(QMainWindow):
         self.targets_window.show()
         self.menuOpenTargets.setEnabled(True)
     def plotWindow(self):
-        T1, T2 = self.calculate_T1_T2()
-        self.plot_window = PlotWindow(self, self.Pd2Lst(T1), self.Pd2Lst(T2))
-        self.mdi.addSubWindow(self.plot_window)
-        self.plot_window.show()
+        try:
+            T1, T2 = self.calculate_T1_T2()
+            self.plot_window = PlotWindow(self, self.Pd2Lst(T1), self.Pd2Lst(T2))
+            self.mdi.addSubWindow(self.plot_window)
+            self.plot_window.show()
+            self.menuCalculate.setEnabled(True)
+        except IndexError:
+            self.warning()
     def plot_Optimize(self):
         self.worker = Worker(self.calculate_O)
         self.worker.signals.start.connect(self.start_fitting)
@@ -658,20 +658,32 @@ class MainWindow(QMainWindow):
         return T3, TB, TA
     def start_fitting(self):
         print("Start..")
+        self.menuCalculate.setEnabled(False)
     def print_output(self, resuft):
         T3, TB, TA = resuft
         self.plot_window.plot_over(self.Pd2Lst(T3), self.Pd2Lst(TB), self.Pd2Lst(TA))
     def progress_fn(self, n):
         print("%d%% done" % n)
     def calculate_errror(self, error):
-        for e in error:
-            print(e)
+        self.critical()
     def thread_complete(self):
         print("Finish")
     def Pd2Lst(self, data):
         """Convert Pandas to List"""
         data = [list(data["wavelength"]), list(data["Transmittance"]), list(data["Reflectance"])]
         return data
+    def warning(self):
+        QMessageBox.warning(
+            self,
+            'Warning',
+            'Please choice 2(s) material.'
+        )
+    def critical(self):
+        QMessageBox.critical(
+            self,
+            'Critical',
+            'Can\'t find an parameter .'
+        )
     def closeEvent(self, event: QCloseEvent):
         super().closeEvent(event) 
 if __name__ == "__main__":

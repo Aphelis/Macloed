@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'c:\Users\letan\OneDrive\Máy tính\Macleod2\uic\plot_test2.ui'
+# Form implementation generated from reading ui file 'c:\Users\letan\OneDrive\Máy tính\Macloed\uic\plot_test2.ui'
 #
 # Created by: PyQt6 UI code generator 6.4.0
 #
