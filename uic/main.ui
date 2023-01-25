@@ -45,6 +45,12 @@
       <height>1080</height>
      </size>
     </property>
+    <property name="baseSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
     <property name="focusPolicy">
      <enum>Qt::NoFocus</enum>
     </property>
@@ -70,6 +76,12 @@
      <width>1440</width>
      <height>26</height>
     </rect>
+   </property>
+   <property name="sizeIncrement">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
    </property>
    <property name="font">
     <font>
@@ -101,7 +113,6 @@
     <addaction name="menuNew"/>
     <addaction name="menuOpen"/>
     <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -160,8 +171,8 @@
    </property>
    <property name="iconSize">
     <size>
-     <width>20</width>
-     <height>20</height>
+     <width>25</width>
+     <height>25</height>
     </size>
    </property>
    <attribute name="toolBarArea">
@@ -254,12 +265,18 @@
   </action>
   <action name="actionBeforeFormula">
    <property name="text">
-    <string>Before</string>
+    <string>Before Table</string>
+   </property>
+   <property name="toolTip">
+    <string>Before Table</string>
    </property>
   </action>
   <action name="actionAfterFormula">
    <property name="text">
-    <string>After</string>
+    <string>After Table</string>
+   </property>
+   <property name="toolTip">
+    <string>After Table</string>
    </property>
   </action>
   <action name="actionCaculator">
@@ -284,11 +301,6 @@
    </property>
    <property name="toolTip">
     <string>Save Design</string>
-   </property>
-  </action>
-  <action name="actionSave_As">
-   <property name="text">
-    <string>Save As..</string>
    </property>
   </action>
   <action name="actionOpenDesign">

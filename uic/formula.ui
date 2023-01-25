@@ -27,6 +27,10 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../icon/folmulaWindow.png</normaloff>../icon/folmulaWindow.png</iconset>
+  </property>
   <property name="autoFillBackground">
    <bool>true</bool>
   </property>

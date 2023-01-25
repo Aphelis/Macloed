@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QAction, QCloseEvent
 from PyQt6.QtCore import Qt, QThreadPool
 
-from PyQt6 import uic, QtWidgets, QtCore
+from PyQt6 import uic, QtWidgets
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from module.Function import Design_thinfilm
 from module.Worker import Worker
@@ -31,6 +31,32 @@ class ResuftWindow(QMdiSubWindow):
         # Setup data
         self.model = TableModel(data)
         self.table.setModel(self.model)   
+class NewMaterialWindow(QMdiSubWindow):
+    count = 0
+    def __init__(self, parent, data, window_name="New Material"):
+        super(NewMaterialWindow, self).__init__()
+        self.parent = parent
+        self.data = data
+        # Get Ui
+        uic.loadUi("uic/newMaterial.ui", self)
+        self.table = self.findChild(QTableView, "tableView")
+        self.button = self.findChild(QDialogButtonBox, "buttonBox")
+        self.button.accepted.connect(self.accept)
+        self.button.rejected.connect(self.reject)
+        self.setWindowTitle(window_name)
+        # Setup data
+        self.model = TableModel(data)
+        self.table.setModel(self.model)  
+    def accept(self):
+        self.close()
+        try:
+            fileName = QFileDialog.getSaveFileName(self, "Open...", os.getenv("HOME"), 
+                                                    filter = "CSV(*.csv)")
+            self.data.to_csv(fileName[0], index=False)
+        except:
+            pass
+    def reject(self):
+        self.close()
 class FormulaWindow(QMdiSubWindow):
     def __init__(self, parent, table, table_parent):
         super(FormulaWindow, self).__init__()
@@ -418,6 +444,7 @@ class MainWindow(QMainWindow):
         self.menuNewDesign.setShortcut('Ctrl+N')
         self.menuNewDesign.triggered.connect(self.new_design_window)
         self.menuNewMaterial = self.findChild(QAction, "actionNewMaterial")
+        self.menuNewMaterial.setShortcut('Ctrl+Shift+N')
         self.menuNewMaterial.triggered.connect(self.new_material_window)
         self.menuOpenTargets = self.findChild(QAction, "actionOpenTargets")
         self.menuOpenTargets.triggered.connect(self.open_targets)
@@ -498,7 +525,7 @@ class MainWindow(QMainWindow):
         elif self.formulaA != None:
             self.formulaA.show()
     def new_material_window(self):
-        try:
+        # try:
             path = QFileDialog.getOpenFileName(self, "Open...", os.getenv(r"C:/"), 
                                             filter = "All(*.*);;CSV(*.csv);;Excel(*.xlsx);;Text(*.txt)")
             file_name = os.path.basename(path[0])
@@ -509,15 +536,16 @@ class MainWindow(QMainWindow):
                     data = pd.read_excel(path[0])
                 elif file_name.endswith(".txt"):
                     data = pd.read_clipboard(path[0])
-                wavelength = data.iloc[:,0]
-                n = data.iloc[:,1]
-                k = data.iloc[:,2]
-                save_data = pd.DataFrame({"Wavelength": wavelength, "n": n, "k": k})
-                fileName = QFileDialog.getSaveFileName(self, "Open...", os.getenv("HOME"), 
-                                                filter = "CSV(*.csv)")
-                save_data.to_csv(fileName[0], index=False)
-        except:
-            pass
+            wavelength = data.iloc[:,0]
+            n = data.iloc[:,1]
+            k = data.iloc[:,2]
+            save_data = pd.DataFrame({"Wavelength": wavelength, "n": n, "k": k})
+            sub = NewMaterialWindow(self, save_data)
+            self.mdi.addSubWindow(sub)
+            sub.show()
+            
+        # except:
+        #     pass
     def open_targets(self):
             tab_index = self.targets_window.tab.currentIndex()
             path = QFileDialog.getOpenFileName(self, "Open...", os.getenv(r"..\targets"), 
