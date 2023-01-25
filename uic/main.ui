@@ -96,9 +96,12 @@
       <string>Open..</string>
      </property>
      <addaction name="actionOpenTargets"/>
+     <addaction name="actionOpenDesign"/>
     </widget>
     <addaction name="menuNew"/>
     <addaction name="menuOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_As"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -168,45 +171,50 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionNewDesign"/>
+   <addaction name="actionOpenDesign"/>
+   <addaction name="actionSave"/>
    <addaction name="separator"/>
    <addaction name="actionPlot"/>
    <addaction name="actionCaculator"/>
    <addaction name="separator"/>
    <addaction name="actionTargets"/>
+   <addaction name="actionOpenTargets"/>
   </widget>
   <action name="actionNewDesign">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/newspaper--plus.png</normaloff>../icon/newspaper--plus.png</iconset>
+     <normaloff>../icon/add-file.png</normaloff>../icon/add-file.png</iconset>
    </property>
    <property name="text">
     <string>Design</string>
    </property>
-  </action>
-  <action name="actionOpen">
-   <property name="icon">
-    <iconset>
-     <normaloff>../icon/open_folder.png</normaloff>../icon/open_folder.png</iconset>
-   </property>
-   <property name="text">
-    <string>Open...</string>
+   <property name="toolTip">
+    <string>New Design</string>
    </property>
   </action>
   <action name="actionNewMaterial">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/new_folder.png</normaloff>../icon/new_folder.png</iconset>
+     <normaloff>../icon/new_file.png</normaloff>../icon/new_file.png</iconset>
    </property>
    <property name="text">
     <string>Material</string>
    </property>
   </action>
   <action name="actionInsert_Row">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/add_row.png</normaloff>../icon/add_row.png</iconset>
+   </property>
    <property name="text">
     <string>Insert Layer</string>
    </property>
   </action>
   <action name="actionRemove_Layer">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/remove_row.png</normaloff>../icon/remove_row.png</iconset>
+   </property>
    <property name="text">
     <string>Remove Layer</string>
    </property>
@@ -214,7 +222,7 @@
   <action name="actionPlot">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/chart.png</normaloff>../icon/chart.png</iconset>
+     <normaloff>../icon/analytics.png</normaloff>../icon/analytics.png</iconset>
    </property>
    <property name="text">
     <string>Plot</string>
@@ -223,19 +231,25 @@
   <action name="actionTargets">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/geolocation.png</normaloff>../icon/geolocation.png</iconset>
+     <normaloff>../icon/target.png</normaloff>../icon/target.png</iconset>
    </property>
    <property name="text">
     <string>Targets</string>
+   </property>
+   <property name="toolTip">
+    <string>New Targets</string>
    </property>
   </action>
   <action name="actionOpenTargets">
    <property name="icon">
     <iconset>
-     <normaloff>../icon/open_folder.png</normaloff>../icon/open_folder.png</iconset>
+     <normaloff>../icon/target_file.png</normaloff>../icon/target_file.png</iconset>
    </property>
    <property name="text">
     <string>Targets</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Targets</string>
    </property>
   </action>
   <action name="actionBeforeFormula">
@@ -255,6 +269,38 @@
    </property>
    <property name="text">
     <string>Caculator</string>
+   </property>
+   <property name="toolTip">
+    <string>Caculator Parameter</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/clipboard.png</normaloff>../icon/clipboard.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save..</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Design</string>
+   </property>
+  </action>
+  <action name="actionSave_As">
+   <property name="text">
+    <string>Save As..</string>
+   </property>
+  </action>
+  <action name="actionOpenDesign">
+   <property name="icon">
+    <iconset>
+     <normaloff>../icon/open-file.png</normaloff>../icon/open-file.png</iconset>
+   </property>
+   <property name="text">
+    <string>Design</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Design</string>
    </property>
   </action>
  </widget>

@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QMdiSubWindow, QFileDialog, QTableWidget,
     QDialogButtonBox, QComboBox, QTableWidgetItem,
     QTabWidget, QPushButton, QWidget, QMessageBox,
-    QGridLayout
+    QProgressBar
 )
 from PyQt6.QtGui import QAction, QCloseEvent
 from PyQt6.QtCore import Qt, QThreadPool
@@ -97,8 +97,6 @@ class PlotWindow(QMdiSubWindow):
         self.plot_matp(self.T2, T2)
         #
         self.tabWidget = self.findChild(QTabWidget, "tabWidget")
-        
-        print(self.tabWidget.count())
     def plot_matp(self, plot, data):
         sc = MplCanvas(self, data, width=5, height=4, dpi=100)
         sc.axes1.plot(data[0], data[1],'r-',label='Transmittance') 
@@ -121,7 +119,10 @@ class PlotWindow(QMdiSubWindow):
         self.plot_matp(self.tabWidget.widget(3), TB)
         self.addTab("進行優化的變色後")
         self.plot_matp(self.tabWidget.widget(4), TA)
+    
     def closeEvent(self, event: QCloseEvent):
+        self.parent.menuPlot.setEnabled(True)
+        self.parent.menuCalculate.setEnabled(False)
         super().closeEvent(event) 
         
 class TargetsWindow(QMdiSubWindow):
@@ -162,13 +163,19 @@ class TargetsWindow(QMdiSubWindow):
         super().closeEvent(event)
    
 class NewDesignWindow(QMdiSubWindow):
-    def __init__(self, parent):
+    def __init__(self, parent, windowName):
         super(NewDesignWindow, self).__init__()
     
         # Get Ui
         self.parent = parent
-        uic.loadUi("uic/table.ui", self)
-        self.setWindowTitle("New Design")
+        self.parent.menuOpenDesign.setEnabled(True)
+        self.parent.menuSaveDesign.setEnabled(True)
+        uic.loadUi("uic/design.ui", self)
+        self.setWindowTitle(windowName)
+        #
+        self.progressBar = self.findChild(QProgressBar, "progressBar")
+        self.progressBar.hide()
+        #
         self.beforeTable = self.findChild(QTableWidget, "before_table")
         self.afterTable = self.findChild(QTableWidget, "after_table")
         self.buttonB = self.findChild(QPushButton, "BeforeButton")
@@ -176,7 +183,6 @@ class NewDesignWindow(QMdiSubWindow):
         self.buttonA = self.findChild(QPushButton, "AfterButton")
         self.buttonA.clicked.connect(self.parent.formula_after)
         #
-        
         self.reference_wavelength_value = MainWindow.custom_wavelengths[0]
         self.currentSelecRow = -1
         #
@@ -347,7 +353,6 @@ class NewDesignWindow(QMdiSubWindow):
             except AttributeError as error:
                 print(error)
             beforeTableData.update({key: value})
-        # print("Before: ", beforeTableData)
         #After Table
         rowCount = self.afterTable.rowCount()
         colCount = self.afterTable.columnCount()
@@ -365,11 +370,14 @@ class NewDesignWindow(QMdiSubWindow):
             except AttributeError as error:
                 print(error)
             afterTableData.update({key: value})
-        # print("Ater: ", afterTableData)
         return beforeTableData, afterTableData, rowCount
+    def resetWindowName(self, windowName):
+        self.setWindowTitle(windowName)
     def closeEvent(self, event: QCloseEvent):
         self.parent.menuInsertRow.setEnabled(False)
         self.parent.menuRemoveRow.setEnabled(False)
+        self.parent.menuOpenDesign.setEnabled(False)
+        self.parent.menuSaveDesign.setEnabled(False)
         self.parent.formulaB = None
         self.parent.formulaA = None
         self.parent.menuNewDesign.setEnabled(True)
@@ -389,6 +397,7 @@ class MainWindow(QMainWindow):
         self.threadpool = QThreadPool()
         self.formulaB = None
         self.formulaA = None
+        self.table_window = None
         # MDI Area
         self.mdi = self.findChild(QMdiArea, "mdiArea")
         self.targets_window = TargetsWindow(self)
@@ -403,6 +412,11 @@ class MainWindow(QMainWindow):
         self.menuOpenTargets = self.findChild(QAction, "actionOpenTargets")
         self.menuOpenTargets.triggered.connect(self.open_targets)
         self.menuOpenTargets.setEnabled(False)
+        self.menuSaveDesign = self.findChild(QAction, "actionSave")
+        self.menuSaveDesign.triggered.connect(self.saveDesign)
+        self.menuSaveDesign.setEnabled(False)
+        self.menuOpenDesign = self.findChild(QAction, "actionOpenDesign")
+        self.menuOpenDesign.triggered.connect(self.openDesign)
         # Menu Edit
         self.menuInsertRow = self.findChild(QAction, "actionInsert_Row")
         self.menuInsertRow.setEnabled(False)
@@ -438,22 +452,20 @@ class MainWindow(QMainWindow):
                 data = pd.read_csv(path + "/" + f_name)
         wavelengths = list(data["Wavelength"])
         MainWindow.custom_wavelengths = [str(w) for w in wavelengths]
-    def new_design_window(self):
-        try:
-            self.menuNewDesign.setEnabled(False)
-            self.program_initialization()
-            self.table_window = NewDesignWindow(self)
-            self.mdi.addSubWindow(self.table_window)
-            self.table_window.show()
-            self.menuInsertRow.setEnabled(True)
-            self.menuInsertRow.triggered.connect(self.table_window.addRow)
-            self.menuRemoveRow.triggered.connect(self.table_window.removeRow)
-            self.check_menu_Remove()
-            self.menuPlot.setEnabled(True)
-            self.menuBeforeFormula.setEnabled(True)
-            self.menuAfterFormula.setEnabled(True)
-        except IndexError as error:
-            print(error)
+    def new_design_window(self, Unknown, windowName = "New Design"):
+        
+        self.menuNewDesign.setEnabled(False)
+        self.program_initialization()
+        self.table_window = NewDesignWindow(self, windowName=windowName)
+        self.mdi.addSubWindow(self.table_window)
+        self.table_window.show()
+        self.menuInsertRow.setEnabled(True)
+        self.menuInsertRow.triggered.connect(self.table_window.addRow)
+        self.menuRemoveRow.triggered.connect(self.table_window.removeRow)
+        self.check_menu_Remove()
+        self.menuPlot.setEnabled(True)
+        self.menuBeforeFormula.setEnabled(True)
+        self.menuAfterFormula.setEnabled(True)
     def check_menu_Remove(self):
         if self.table_window.before_table.rowCount() > 3:
             self.menuRemoveRow.setEnabled(True)
@@ -496,7 +508,6 @@ class MainWindow(QMainWindow):
             pass
     def open_targets(self):
             tab_index = self.targets_window.tab.currentIndex()
-        # try:
             path = QFileDialog.getOpenFileName(self, "Open...", os.getenv(r"..\targets"), 
                                             filter = "All(*.*);;CSV(*.csv);;Excel(*.xlsx);;Text(*.txt)")
             file_name = os.path.basename(path[0])
@@ -512,8 +523,63 @@ class MainWindow(QMainWindow):
                 targets = pd.DataFrame({"Wavelength (nm)": wavelength, "Reflectance": reflectance})
                 MainWindow.targets[tab_index] = targets
                 self.targets_window.refreshTable(reflectance = reflectance, index = tab_index)
-        # except :
-        #     pass
+    def saveDesign(self):
+        beforeData, afterData = self.getSaveValue()
+        beforeData = pd.DataFrame.from_dict(beforeData, orient = "index")
+        afterData = pd.DataFrame.from_dict(afterData, orient = "index")
+        data = beforeData.append(afterData)
+        data.index.name = "Layer"
+        path = QFileDialog.getSaveFileName(self, "Save...", os.getenv(r"..\design"), 
+                                                filter = "All(*.*);;CSV(*.csv);;Excel(*.xlsx);;Text(*.txt)")
+        data.to_csv(path[0])
+    def getSaveValue(self):
+        beforeData, afterData, _ = self.table_window.getValue()
+        return beforeData, afterData
+    def openDesign(self):
+        try:
+            materials = [[] for _ in range(2)]
+            thickness = [[] for _ in range(2)]
+            path = QFileDialog.getOpenFileName(self, "Open...", os.getenv(r"..\targets"), 
+                                                filter = "All(*.*);;CSV(*.csv);;Excel(*.xlsx);;Text(*.txt)")
+            file_name = os.path.splitext(os.path.basename(path[0]))
+            if self.table_window == None:
+                self.new_design_window(None, windowName=file_name[0])
+            else:
+                self.table_window.resetWindowName(file_name[0])
+            data = pd.read_csv(path[0]).to_dict()
+            keys = list(data.keys())
+            layerKeys = data[keys[0]].keys()
+            i = 0
+            for key in layerKeys:
+                materials[i].append(data["material"][key])
+                thickness[i].append(data["d"][key])
+                if data["Layer"][key] == "Subtrate":
+                    i += 1
+            self.updateTableMaterial(materials[0], self.table_window.beforeTable)
+            self.updateTableMaterial(materials[1], self.table_window.afterTable)
+            self.updateTableThickness(thickness[0], self.table_window.beforeTable)
+        except:
+            pass
+    def updateTableMaterial(self, materials, table):
+        num = len(materials)
+        rowCount = table.rowCount()
+        for _ in range(num-rowCount):
+            table.insertRow(0)
+            comboBox = QComboBox(self)
+            comboBox.addItems(MainWindow.list_material)  
+            table.setCellWidget(0, 1, comboBox)
+            comboBox.currentTextChanged.connect(self.table_window.refresh_table)
+            table.setItem(0, 4, QTableWidgetItem(str(0)))
+            self.table_window.refreshLayerNum()
+        table.cellWidget(rowCount-1, 1).setCurrentText(materials[-1])
+        for row in range(num-1):
+            table.cellWidget(row, 1).setCurrentText(materials[row])
+        self.table_window.refresh_table(0)
+    def updateTableThickness(self, thickness, table):
+        num = len(thickness)
+        for row in range(num):
+            table.setItem(row, 4, QTableWidgetItem(str(thickness[row])))
+        self.table_window.refresh_table(0)
     def selec_material_folder(self):
         MainWindow.list_material = []
         path = QFileDialog.getExistingDirectory(self)
@@ -533,6 +599,7 @@ class MainWindow(QMainWindow):
             self.mdi.addSubWindow(self.plot_window)
             self.plot_window.show()
             self.menuCalculate.setEnabled(True)
+            self.menuPlot.setEnabled(False)
         except IndexError:
             self.warning()
     def plot_Optimize(self):
@@ -659,15 +726,19 @@ class MainWindow(QMainWindow):
     def start_fitting(self):
         print("Start..")
         self.menuCalculate.setEnabled(False)
+        self.plot_window.setWindowTitle("Fitting...")
+        self.table_window.progressBar.show()
     def print_output(self, resuft):
         T3, TB, TA = resuft
         self.plot_window.plot_over(self.Pd2Lst(T3), self.Pd2Lst(TB), self.Pd2Lst(TA))
     def progress_fn(self, n):
         print("%d%% done" % n)
     def calculate_errror(self, error):
-        self.critical()
+        self.critical("Can't find a parameter")
     def thread_complete(self):
         print("Finish")
+        self.table_window.progressBar.hide()
+        self.plot_window.setWindowTitle("Plot Window")
     def Pd2Lst(self, data):
         """Convert Pandas to List"""
         data = [list(data["wavelength"]), list(data["Transmittance"]), list(data["Reflectance"])]
@@ -678,11 +749,11 @@ class MainWindow(QMainWindow):
             'Warning',
             'Please choice 2(s) material.'
         )
-    def critical(self):
+    def critical(self, text = 'Can\'t find an parameter .'):
         QMessageBox.critical(
             self,
             'Critical',
-            'Can\'t find an parameter .'
+            text
         )
     def closeEvent(self, event: QCloseEvent):
         super().closeEvent(event) 
