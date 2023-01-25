@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QMdiSubWindow, QFileDialog, QTableWidget,
     QDialogButtonBox, QComboBox, QTableWidgetItem,
     QTabWidget, QPushButton, QWidget, QMessageBox,
-    QProgressBar
+    QProgressBar, QTableView
 )
 from PyQt6.QtGui import QAction, QCloseEvent
 from PyQt6.QtCore import Qt, QThreadPool
@@ -18,6 +18,19 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from module.Function import Design_thinfilm
 from module.Worker import Worker
 from module.mplwidget import MplCanvas
+from module.TableModel import TableModel
+class ResuftWindow(QMdiSubWindow):
+    count = 0
+    def __init__(self, parent, data, window_name="Resuft"):
+        super(ResuftWindow, self).__init__()
+        self.parent = parent
+        # Get Ui
+        uic.loadUi("uic/table_resuft.ui", self)
+        self.table = self.findChild(QTableView, "tableView")
+        self.setWindowTitle(window_name)
+        # Setup data
+        self.model = TableModel(data)
+        self.table.setModel(self.model)   
 class FormulaWindow(QMdiSubWindow):
     def __init__(self, parent, table, table_parent):
         super(FormulaWindow, self).__init__()
@@ -205,8 +218,6 @@ class NewDesignWindow(QMdiSubWindow):
         #
         self.refresh_table(0)
         #Set Signal
-        self.beforeTable.cellClicked.connect(self.cellClickedSignal)
-        self.afterTable.cellClicked.connect(self.cellClickedSignal)
         self.beforeTable.itemChanged.connect(self.beforeTableThicknessChange)
         self.afterTable.itemChanged.connect(self.afterTableThicknessChange)
     def beforeTableThicknessChange(self, item):
@@ -228,10 +239,8 @@ class NewDesignWindow(QMdiSubWindow):
         text = QTableWidgetItem(item.text())
         text.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         #
-        if col == 4 and item.text() != "0" and self.beforeTable.item(row, col).text() != item.text():
+        if (col == 4) and (item.text() != "0") and (self.beforeTable.item(row, col).text() != item.text()):
             self.beforeTable.setItem(row, col, QTableWidgetItem(item.text()))
-    def cellClickedSignal(self, row, col):
-        self.currentSelecRow = row
     def refresh_table(self, text):
         """ Refresh n and k value
             Setup begining n and k value"""
@@ -406,6 +415,7 @@ class MainWindow(QMainWindow):
         self.targets_window.hide()
         # Menu File
         self.menuNewDesign = self.findChild(QAction, "actionNewDesign")
+        self.menuNewDesign.setShortcut('Ctrl+N')
         self.menuNewDesign.triggered.connect(self.new_design_window)
         self.menuNewMaterial = self.findChild(QAction, "actionNewMaterial")
         self.menuNewMaterial.triggered.connect(self.new_material_window)
@@ -413,9 +423,11 @@ class MainWindow(QMainWindow):
         self.menuOpenTargets.triggered.connect(self.open_targets)
         self.menuOpenTargets.setEnabled(False)
         self.menuSaveDesign = self.findChild(QAction, "actionSave")
+        self.menuSaveDesign.setShortcut('Ctrl+S')
         self.menuSaveDesign.triggered.connect(self.saveDesign)
         self.menuSaveDesign.setEnabled(False)
         self.menuOpenDesign = self.findChild(QAction, "actionOpenDesign")
+        self.menuOpenDesign.setShortcut('Ctrl+O')
         self.menuOpenDesign.triggered.connect(self.openDesign)
         # Menu Edit
         self.menuInsertRow = self.findChild(QAction, "actionInsert_Row")
@@ -524,14 +536,17 @@ class MainWindow(QMainWindow):
                 MainWindow.targets[tab_index] = targets
                 self.targets_window.refreshTable(reflectance = reflectance, index = tab_index)
     def saveDesign(self):
-        beforeData, afterData = self.getSaveValue()
-        beforeData = pd.DataFrame.from_dict(beforeData, orient = "index")
-        afterData = pd.DataFrame.from_dict(afterData, orient = "index")
-        data = beforeData.append(afterData)
-        data.index.name = "Layer"
-        path = QFileDialog.getSaveFileName(self, "Save...", os.getenv(r"..\design"), 
-                                                filter = "All(*.*);;CSV(*.csv);;Excel(*.xlsx);;Text(*.txt)")
-        data.to_csv(path[0])
+        try:
+            beforeData = pd.DataFrame.from_dict(beforeData, orient = "index")
+            aftbeforeData, afterData = self.getSaveValue()
+            erData = pd.DataFrame.from_dict(afterData, orient = "index")
+            data = beforeData.append(afterData)
+            data.index.name = "Layer"
+            path = QFileDialog.getSaveFileName(self, "Save...", os.getenv(r"..\design"), 
+                                                    filter = "All(*.*);;CSV(*.csv);;Excel(*.xlsx);;Text(*.txt)")
+            data.to_csv(path[0])
+        except:
+            pass
     def getSaveValue(self):
         beforeData, afterData, _ = self.table_window.getValue()
         return beforeData, afterData
@@ -722,15 +737,18 @@ class MainWindow(QMainWindow):
         df=pd.DataFrame(data=d, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) 
             
         print("df", df)
-        return T3, TB, TA
+        return T3, TB, TA, df
     def start_fitting(self):
         print("Start..")
         self.menuCalculate.setEnabled(False)
         self.plot_window.setWindowTitle("Fitting...")
         self.table_window.progressBar.show()
     def print_output(self, resuft):
-        T3, TB, TA = resuft
+        T3, TB, TA, df = resuft
         self.plot_window.plot_over(self.Pd2Lst(T3), self.Pd2Lst(TB), self.Pd2Lst(TA))
+        sub = ResuftWindow(self, df)
+        self.mdi.addSubWindow(sub)
+        sub.show()
     def progress_fn(self, n):
         print("%d%% done" % n)
     def calculate_errror(self, error):
